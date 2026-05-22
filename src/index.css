@@ -392,6 +392,11 @@
     padding-left: 1.375em;
     margin-bottom: 1em;
   }
+  li > ul,
+  li > ol {
+    margin-top: 0.25em;
+    margin-bottom: 0;
+  }
   li {
     margin-bottom: 0.125em;
   }
@@ -409,7 +414,15 @@
   li:has(> input[type="checkbox"]) {
     display: flex;
     align-items: baseline;
-    gap: 0.5em;
+    column-gap: 0.5em;
+    flex-wrap: wrap;
+  }
+  li:has(> input[type="checkbox"]) > ul,
+  li:has(> input[type="checkbox"]) > ol {
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: 1.375em;
   }
   input[type="checkbox"] {
     appearance: none;
@@ -441,7 +454,7 @@
       }
     }
   }
-  li:has(> input[type="checkbox"]:checked) > *:not(input) {
+  li:has(> input[type="checkbox"]:checked) > *:not(input):not(ul):not(ol) {
     color: var(--muted-foreground);
     text-decoration: line-through;
     text-decoration-color: var(--border);
