@@ -9,10 +9,11 @@ import {
   InfoIcon,
   LoaderCircleIcon,
   TriangleAlertIcon,
+  XIcon,
 } from "lucide-react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { cn, formatRelative } from "@/lib/utils";
 
 const TOAST_ICONS = {
   error: CircleAlertIcon,
@@ -165,6 +166,8 @@ function Toasts({
 
           const dismissLabel = (toast.data as { dismissLabel?: string })?.dismissLabel;
           const onDismiss = (toast.data as { onDismiss?: () => void })?.onDismiss;
+          const isRich = (toast.data as { rich?: boolean })?.rich ?? false;
+          const timestamp = (toast.data as { timestamp?: number })?.timestamp;
 
           return (
             <Toast.Root
@@ -215,53 +218,106 @@ function Toasts({
               swipeDirection={swipeDirection}
               toast={toast}
             >
-              <Toast.Content className="font-sans pointer-events-auto flex items-center justify-between gap-3 overflow-hidden px-3.5 py-3 text-sm transition-opacity duration-250 data-behind:not-data-expanded:pointer-events-none data-behind:opacity-0 data-expanded:opacity-100">
-                <div className="flex gap-2">
-                  {Icon && (
-                    <div
-                      className="[&>svg]:h-lh [&>svg]:w-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
-                      data-slot="toast-icon"
-                    >
-                      <Icon className="in-data-[type=loading]:animate-spin in-data-[type=error]:text-destructive in-data-[type=info]:text-info in-data-[type=success]:text-success in-data-[type=warning]:text-warning in-data-[type=loading]:opacity-80" />
-                    </div>
-                  )}
-
-                  <div className="flex flex-col gap-0.5">
-                    <Toast.Title
-                      className="font-medium"
-                      data-slot="toast-title"
-                    />
-                    <Toast.Description
-                      className="text-muted-foreground"
-                      data-slot="toast-description"
-                    />
-                  </div>
-                </div>
-                {(toast.actionProps || dismissLabel) && (
-                  <div className="flex shrink-0 gap-1">
-                    {dismissLabel && (
-                      <Button
-                        onClick={() => {
-                          onDismiss?.();
-                          toastManager.close(toast.id);
-                        }}
-                        size="xs"
-                        variant="ghost"
-                      >
-                        {dismissLabel}
-                      </Button>
+              <Toast.Content className="font-sans pointer-events-auto overflow-hidden text-sm transition-opacity duration-250 data-behind:not-data-expanded:pointer-events-none data-behind:opacity-0 data-expanded:opacity-100">
+                {isRich
+                  ? (
+                      <div className="flex items-start gap-3 p-3.5">
+                        {Icon && (
+                          <div className="flex size-8 shrink-0 items-center justify-center rounded-full in-data-[type=error]:bg-destructive/10 in-data-[type=info]:bg-info/10 in-data-[type=success]:bg-success/10">
+                            <Icon className="size-3.5 in-data-[type=error]:text-destructive in-data-[type=info]:text-info in-data-[type=success]:text-success" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <Toast.Title className="font-medium" data-slot="toast-title" />
+                          <Toast.Description className="mt-0.5 text-muted-foreground leading-relaxed" data-slot="toast-description" />
+                          <div className="mt-3 flex items-center justify-between">
+                            {timestamp !== undefined && (
+                              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground/60">
+                                {formatRelative(timestamp)}
+                              </span>
+                            )}
+                            {(toast.actionProps || dismissLabel) && (
+                              <div className="ml-auto flex gap-1">
+                                {dismissLabel && (
+                                  <Button
+                                    onClick={() => {
+                                      onDismiss?.();
+                                      toastManager.close(toast.id);
+                                    }}
+                                    size="xs"
+                                    variant="ghost"
+                                  >
+                                    {dismissLabel}
+                                  </Button>
+                                )}
+                                {toast.actionProps && (
+                                  <Toast.Action
+                                    className={buttonVariants({ size: "xs" })}
+                                    data-slot="toast-action"
+                                    onClick={(toast.actionProps as { onClick?: React.MouseEventHandler }).onClick}
+                                  >
+                                    {toast.actionProps.children}
+                                  </Toast.Action>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <button
+                          className="-mr-1 -mt-1 rounded-md p-1 text-muted-foreground transition-colors hover:bg-foreground/5 hover:text-foreground"
+                          onClick={() => {
+                            onDismiss?.();
+                            toastManager.close(toast.id);
+                          }}
+                          type="button"
+                        >
+                          <XIcon className="size-3.5" />
+                        </button>
+                      </div>
+                    )
+                  : (
+                      <div className="flex items-center justify-between gap-3 px-3.5 py-3">
+                        <div className="flex gap-2">
+                          {Icon && (
+                            <div
+                              className="[&>svg]:h-lh [&>svg]:w-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                              data-slot="toast-icon"
+                            >
+                              <Icon className="in-data-[type=loading]:animate-spin in-data-[type=error]:text-destructive in-data-[type=info]:text-info in-data-[type=success]:text-success in-data-[type=warning]:text-warning in-data-[type=loading]:opacity-80" />
+                            </div>
+                          )}
+                          <div className="flex flex-col gap-0.5">
+                            <Toast.Title className="font-medium" data-slot="toast-title" />
+                            <Toast.Description className="text-muted-foreground" data-slot="toast-description" />
+                          </div>
+                        </div>
+                        {(toast.actionProps || dismissLabel) && (
+                          <div className="flex shrink-0 gap-1">
+                            {dismissLabel && (
+                              <Button
+                                onClick={() => {
+                                  onDismiss?.();
+                                  toastManager.close(toast.id);
+                                }}
+                                size="xs"
+                                variant="ghost"
+                              >
+                                {dismissLabel}
+                              </Button>
+                            )}
+                            {toast.actionProps && (
+                              <Toast.Action
+                                className={buttonVariants({ size: "xs" })}
+                                data-slot="toast-action"
+                                onClick={(toast.actionProps as { onClick?: React.MouseEventHandler }).onClick}
+                              >
+                                {toast.actionProps.children}
+                              </Toast.Action>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     )}
-                    {toast.actionProps && (
-                      <Toast.Action
-                        className={buttonVariants({ size: "xs" })}
-                        data-slot="toast-action"
-                        onClick={(toast.actionProps as { onClick?: React.MouseEventHandler }).onClick}
-                      >
-                        {toast.actionProps.children}
-                      </Toast.Action>
-                    )}
-                  </div>
-                )}
               </Toast.Content>
             </Toast.Root>
           );

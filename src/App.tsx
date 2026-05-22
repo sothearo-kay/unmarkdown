@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Children, isValidElement, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Markdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 
 import type { Note } from "./lib/notes";
@@ -28,8 +29,9 @@ import { useLocalStorage } from "./hooks/use-local-storage";
 import { useNotes } from "./hooks/use-notes";
 import { useTheme } from "./hooks/use-theme";
 import { formatMarkdown } from "./lib/format";
+import { titleFromContent } from "./lib/notes";
 import { parseShareHash } from "./lib/share";
-import { cn } from "./lib/utils";
+import { cn, formatRelative } from "./lib/utils";
 
 type RightTab = "outline" | "preview";
 
@@ -41,7 +43,6 @@ export default function App() {
   const [dragging, setDragging] = useState(false);
   const [vimMode, setVimMode] = useLocalStorage("vim-mode", false);
   const [rightTab, setRightTab] = useLocalStorage<RightTab>("right-tab", "preview");
-  const [sharedContent] = useState(() => parseShareHash());
   const containerRef = useRef<HTMLDivElement>(null);
   const setEditorContent = useRef<((content: string) => void) | null>(null);
 
@@ -118,30 +119,52 @@ export default function App() {
   }, [dragging]);
 
   useEffect(() => {
-    if (!sharedContent) return;
+    function handleShare() {
+      if (!location.hash.startsWith("#share=")) return;
 
-    const title = sharedContent.split("\n").find(l => l.trim())?.replace(/^#+\s*/, "").trim() ?? "Untitled";
+      const content = parseShareHash();
+      if (!content) {
+        history.replaceState(null, "", location.pathname);
+        toastManager.add({
+          data: { rich: true },
+          description: "The link may be truncated or corrupted. Ask the sender to share it again.",
+          id: "import-shared-note-error",
+          title: "Couldn't open shared note",
+          type: "error",
+        });
+        return;
+      }
 
-    const id = setTimeout(() => {
+      const title = titleFromContent(content);
       toastManager.add({
         actionProps: {
           children: "Save",
           onClick: () => {
-            importNote(sharedContent);
+            importNote(content);
             history.replaceState(null, "", location.pathname);
           },
         },
-        data: { dismissLabel: "Dismiss", onDismiss: () => history.replaceState(null, "", location.pathname) },
-        description: `Save "${title}" to your notes`,
+        data: {
+          dismissLabel: "Dismiss",
+          onDismiss: () => history.replaceState(null, "", location.pathname),
+          rich: true,
+          timestamp: Date.now(),
+        },
+        description: `"${title}" was shared with you. Save it to your notes to access it anytime.`,
         id: "import-shared-note",
         timeout: 1000000,
         title: "Note shared with you",
         type: "info",
       });
-    }, 0);
-    return () => clearTimeout(id);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    }
+
+    const id = setTimeout(handleShare, 0);
+    window.addEventListener("hashchange", handleShare);
+    return () => {
+      clearTimeout(id);
+      window.removeEventListener("hashchange", handleShare);
+    };
+  }, [importNote]);
 
   const { cycle: cycleTheme, theme } = useTheme();
 
@@ -154,7 +177,7 @@ export default function App() {
           <Logo className="size-4 shrink-0 text-muted-foreground" />
           <span className="text-muted-foreground">UnMarkdown</span>
           <span className="text-muted-foreground/40">/</span>
-          <span className="text-foreground">
+          <span className="max-w-48 truncate text-foreground">
             {activeNote?.title ?? "Untitled"}
           </span>
         </span>
@@ -291,7 +314,7 @@ function EditorPane({
             {notes.map(note => (
               <NoteTab
                 active={activeId === note.id}
-                deletable={notes.length > 1}
+                deletable
                 key={note.id}
                 note={note}
                 onDelete={onDelete}
@@ -308,13 +331,15 @@ function EditorPane({
 
       {activeNote
         ? (
-            <EditorView
-              key={activeNote.id}
-              note={activeNote}
-              onReady={onEditorReady}
-              onUpdate={onUpdate}
-              vimMode={vimMode}
-            />
+            <ScrollArea className="flex-1">
+              <EditorView
+                key={activeNote.id}
+                note={activeNote}
+                onReady={onEditorReady}
+                onUpdate={onUpdate}
+                vimMode={vimMode}
+              />
+            </ScrollArea>
           )
         : (
             <div className="flex flex-1 flex-col items-center justify-center gap-4">
@@ -326,49 +351,41 @@ function EditorPane({
   );
 }
 
-function formatRelative(ts: number): string {
-  const diff = Date.now() - ts;
-  const s = Math.floor(diff / 1000);
-  if (s < 60) return "just now";
-  const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
-  return `${Math.floor(h / 24)}d ago`;
-}
-
 function PreviewPane({ note, tab }: { note: Note | null; tab: RightTab }) {
   if (!note) return <div className="flex-1" />;
 
   if (tab === "outline") {
     return (
-      <div className="flex-1 overflow-auto">
+      <ScrollArea className="flex-1" scrollFade>
         <OutlineTree content={note.content} />
-      </div>
+      </ScrollArea>
     );
   }
 
   return (
-    <div className="flex-1 overflow-auto p-4">
-      <div className="prose">
-        <Markdown
-          components={{
-            pre({ children }) {
-              type CodeProps = { children?: React.ReactNode; className?: string };
-              const codeEl = Children.toArray(children).find(
-                child => isValidElement(child) && child.type === "code",
-              ) as React.ReactElement<CodeProps> | undefined;
-              const lang = (codeEl?.props.className ?? "").replace("language-", "");
-              const code = String(codeEl?.props.children ?? "").trimEnd();
-              return <CodeBlock code={code} lang={lang} />;
-            },
-          }}
-          remarkPlugins={[remarkGfm]}
-        >
-          {note.content}
-        </Markdown>
+    <ScrollArea className="flex-1" scrollFade>
+      <div className="p-4">
+        <div className="prose">
+          <Markdown
+            components={{
+              pre({ children }) {
+                type CodeProps = { children?: React.ReactNode; className?: string };
+                const codeEl = Children.toArray(children).find(
+                  child => isValidElement(child) && child.type === "code",
+                ) as React.ReactElement<CodeProps> | undefined;
+                const lang = (codeEl?.props.className ?? "").replace("language-", "");
+                const code = String(codeEl?.props.children ?? "").trimEnd();
+                return <CodeBlock code={code} lang={lang} />;
+              },
+            }}
+            rehypePlugins={[rehypeRaw]}
+            remarkPlugins={[remarkGfm]}
+          >
+            {note.content}
+          </Markdown>
+        </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 }
 

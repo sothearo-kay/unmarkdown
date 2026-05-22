@@ -261,7 +261,14 @@
 }
 
 .cm-panels-bottom {
-  background: transparent !important;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: color-mix(
+    in oklch,
+    var(--foreground) 2%,
+    var(--background)
+  ) !important;
   border-top: none !important;
 }
 
@@ -297,6 +304,10 @@
 
 .cm-editor.cm-focused .cm-selectionBackground {
   background-color: oklch(0.556 0 0 / 25%) !important;
+}
+
+.cm-scroller {
+  flex: 1 !important;
 }
 
 .prose {
@@ -389,6 +400,75 @@
   }
   ol {
     list-style-type: decimal;
+  }
+
+  ul:has(input[type="checkbox"]) {
+    list-style: none;
+    padding-left: 0;
+  }
+  li:has(> input[type="checkbox"]) {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5em;
+  }
+  input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    flex-shrink: 0;
+    width: 0.875em;
+    height: 0.875em;
+    border-radius: 0.25em;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    position: relative;
+    translate: 0 0.1em;
+    cursor: default;
+    transition:
+      background 120ms,
+      border-color 120ms;
+    &:checked {
+      background: var(--foreground);
+      border-color: var(--foreground);
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--background);
+        mask-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 6 9 17l-5-5' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        mask-size: contain;
+        mask-repeat: no-repeat;
+        mask-position: center;
+      }
+    }
+  }
+  li:has(> input[type="checkbox"]:checked) > *:not(input) {
+    color: var(--muted-foreground);
+    text-decoration: line-through;
+    text-decoration-color: var(--border);
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--radius-lg);
+    margin: 0.25em 0;
+  }
+
+  h1:has(img),
+  h2:has(img),
+  h3:has(img),
+  h4:has(img) {
+    display: flex;
+    align-items: center;
+    gap: 0.35em;
+  }
+  h1 img,
+  h2 img,
+  h3 img,
+  h4 img {
+    flex-shrink: 0;
+    margin: 0;
+    border-radius: var(--radius-sm);
   }
 
   code:not(pre code) {

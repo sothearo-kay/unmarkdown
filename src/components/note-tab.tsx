@@ -41,7 +41,7 @@ export function NoteTab({ active, deletable, note, onDelete, onRename, onSelect 
       }}
     >
       <div className="relative">
-        <span className={editing ? "invisible" : ""}>{editing ? (value || " ") : note.title}</span>
+        <span className={cn("max-w-32 truncate block", editing ? "invisible" : "")}>{editing ? (value || " ") : note.title}</span>
         {editing && (
           <input
             autoFocus

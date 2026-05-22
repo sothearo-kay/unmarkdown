@@ -24,5 +24,5 @@ export function EditorView({ note, onReady, onUpdate, vimMode }: EditorViewProps
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <div className="flex-1 overflow-hidden" ref={editorRef} />;
+  return <div className="size-full" ref={editorRef} />;
 }

@@ -57,8 +57,30 @@ const headingLabels = ViewPlugin.fromClass(
   { decorations: v => v.decorations },
 );
 
+const scrollFollowCursor = ViewPlugin.fromClass(class {
+  update(update: ViewUpdate) {
+    if (!update.selectionSet && !update.docChanged) return;
+    const { view } = update;
+    requestAnimationFrame(() => {
+      const head = view.state.selection.main.head;
+      const coords = view.coordsAtPos(head);
+      if (!coords) return;
+      const viewport = view.scrollDOM.closest("[data-slot='scroll-area-viewport']") as HTMLElement | null;
+      if (!viewport) return;
+      const vp = viewport.getBoundingClientRect();
+      const pad = 80;
+      if (coords.top < vp.top + pad) {
+        viewport.scrollTop += coords.top - vp.top - pad;
+      }
+      else if (coords.bottom > vp.bottom - pad) {
+        viewport.scrollTop += coords.bottom - vp.bottom + pad;
+      }
+    });
+  }
+});
+
 const transparentOverride = EditorView.theme({
-  "&": { background: "transparent !important", backgroundColor: "transparent !important", fontSize: "12.5px", height: "100%" },
+  "&": { background: "transparent !important", backgroundColor: "transparent !important", fontSize: "12.5px", height: "auto", minHeight: "100%" },
   "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground": {
     backgroundColor: "#88888830 !important",
   },
@@ -133,6 +155,7 @@ export function useCodemirror({
       markdown({ base: markdownLanguage, codeLanguages: languages }),
       EditorView.lineWrapping,
       headingLabels,
+      scrollFollowCursor,
       vimCompartment.current.of(vimMode ? vim() : []),
       themeCompartment.current.of([catppuccinTheme(), transparentOverride]),
       EditorView.updateListener.of((update) => {

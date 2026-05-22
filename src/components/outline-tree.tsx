@@ -1,6 +1,7 @@
 import { ChevronRightIcon } from "lucide-react";
 import { useState } from "react";
 
+import { stripText } from "@/lib/notes";
 import { cn } from "@/lib/utils";
 
 interface HeadingNode {
@@ -58,7 +59,7 @@ function buildTree(content: string): HeadingNode[] {
     const m = line.match(/^(#{1,6})\s+(.+)/);
     if (!m) continue;
     const level = m[1].length;
-    const text = m[2].trim();
+    const text = stripText(m[2]);
     const node: HeadingNode = { children: [], level, text };
 
     while (stack.length > 0 && stack[stack.length - 1].level >= level) {
