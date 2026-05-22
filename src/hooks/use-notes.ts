@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { createNote, type Note, notesDb, titleFromContent } from "@/lib/notes";
+import { createNote, type Note, notesDb, titleFromContent, WELCOME_NOTE } from "@/lib/notes";
+
+import { useLocalStorage } from "./use-local-storage";
 
 export function useNotes() {
   const [notes, setNotes] = useState<Note[]>([]);
-  const [activeId, setActiveId] = useState<null | string>(null);
+  const [activeId, setActiveId] = useLocalStorage<null | string>("active-note-id", null);
 
   useEffect(() => {
     notesDb.getAll().then((all) => {
       const sorted = all.sort((a, b) => a.createdAt - b.createdAt);
       if (sorted.length === 0) {
-        const note = createNote();
+        const note = createNote(WELCOME_NOTE);
         notesDb.save(note).then(() => {
           setNotes([note]);
           setActiveId(note.id);
@@ -18,7 +20,7 @@ export function useNotes() {
       }
       else {
         setNotes(sorted);
-        setActiveId(sorted[0].id);
+        setActiveId(prev => sorted.find(n => n.id === prev) ? prev! : sorted[0].id);
       }
     });
   }, []);
@@ -68,8 +70,14 @@ export function useNotes() {
       notesDb.delete(id).then(() => {
         setNotes((prev) => {
           const next = prev.filter(n => n.id !== id);
+          if (next.length === 0) {
+            const fresh = createNote();
+            notesDb.save(fresh);
+            setActiveId(fresh.id);
+            return [fresh];
+          }
           if (activeId === id) {
-            setActiveId(next[0]?.id ?? null);
+            setActiveId(next[0].id);
           }
           return next;
         });
