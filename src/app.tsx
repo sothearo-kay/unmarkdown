@@ -186,7 +186,16 @@ export default function App() {
         <TooltipProvider>
           <div className="flex items-center gap-1">
             <Tooltip>
-              <TooltipTrigger render={<Button onClick={handleFormat} size="xs" variant="ghost" />}>
+              <TooltipTrigger
+                render={(
+                  <Button
+                    disabled={!activeNote?.content.trim()}
+                    onClick={handleFormat}
+                    size="xs"
+                    variant="ghost"
+                  />
+                )}
+              >
                 <WandSparklesIcon />
                 Format
               </TooltipTrigger>
@@ -199,7 +208,12 @@ export default function App() {
               </TooltipContent>
             </Tooltip>
 
-            {activeNote && <ShareButton content={activeNote.content} />}
+            {activeNote && (
+              <ShareButton
+                content={activeNote.content}
+                disabled={!activeNote.content.trim()}
+              />
+            )}
           </div>
         </TooltipProvider>
 
