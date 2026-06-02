@@ -322,27 +322,40 @@ function EditorPane({
   onUpdate: (id: string, content: string) => void;
   vimMode: boolean;
 }) {
+  const tabsViewportRef = useRef<HTMLDivElement>(null);
+  const prevNoteCount = useRef(notes.length);
+
+  useLayoutEffect(() => {
+    if (notes.length > prevNoteCount.current) {
+      const viewport = tabsViewportRef.current?.querySelector<HTMLElement>("[data-slot=\"scroll-area-viewport\"]");
+      if (viewport) viewport.scrollLeft = viewport.scrollWidth;
+    }
+    prevNoteCount.current = notes.length;
+  }, [notes.length]);
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-9 shrink-0 items-center border-b border-border/60">
-        <ScrollArea className="h-9" scrollFade>
-          <div className="px-2 flex h-9 items-center gap-0.5">
-            {notes.map(note => (
-              <NoteTab
-                active={activeId === note.id}
-                deletable
-                key={note.id}
-                note={note}
-                onDelete={onDelete}
-                onRename={onRename}
-                onSelect={onSelect}
-              />
-            ))}
-            <Button className="hover:bg-foreground/5" onClick={onAdd} size="xs" variant="ghost">
-              <PlusIcon className="size-3.5" />
-            </Button>
-          </div>
-        </ScrollArea>
+        <div className="h-9 flex-1 overflow-hidden" ref={tabsViewportRef}>
+          <ScrollArea className="h-9" scrollFade>
+            <div className="px-2 flex h-9 items-center gap-0.5">
+              {notes.map(note => (
+                <NoteTab
+                  active={activeId === note.id}
+                  deletable
+                  key={note.id}
+                  note={note}
+                  onDelete={onDelete}
+                  onRename={onRename}
+                  onSelect={onSelect}
+                />
+              ))}
+              <Button className="hover:bg-foreground/5" onClick={onAdd} size="xs" variant="ghost">
+                <PlusIcon className="size-3.5" />
+              </Button>
+            </div>
+          </ScrollArea>
+        </div>
       </div>
 
       {activeNote

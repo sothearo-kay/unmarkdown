@@ -18,7 +18,7 @@ export function ScrollArea({
 }): React.ReactElement {
   return (
     <ScrollAreaPrimitive.Root
-      className={cn("size-full min-h-0", className)}
+      className={cn("group/scroll size-full min-h-0", className)}
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
@@ -48,7 +48,7 @@ export function ScrollBar({
   return (
     <ScrollAreaPrimitive.Scrollbar
       className={cn(
-        "m-0.5 flex opacity-0 transition-opacity delay-300 data-[orientation=horizontal]:h-1.5 data-[orientation=vertical]:w-1.5 data-[orientation=horizontal]:flex-col data-hovering:opacity-100 data-scrolling:opacity-100 data-hovering:delay-0 data-scrolling:delay-0 data-hovering:duration-100 data-scrolling:duration-100",
+        "m-0.5 flex opacity-0 transition-opacity delay-300 data-[orientation=horizontal]:h-1.5 data-[orientation=vertical]:w-1.5 data-[orientation=horizontal]:flex-col data-hovering:opacity-100 data-scrolling:opacity-100 data-hovering:delay-0 data-scrolling:delay-0 data-hovering:duration-100 data-scrolling:duration-100 group-hover/scroll:opacity-100 group-hover/scroll:delay-0 group-hover/scroll:duration-100",
         className,
       )}
       data-slot="scroll-area-scrollbar"
