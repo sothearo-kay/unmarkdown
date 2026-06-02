@@ -68,19 +68,24 @@ export function useNotes() {
   const deleteNote = useCallback(
     (id: string) => {
       notesDb.delete(id).then(() => {
+        const fresh = createNote();
+        let usedFresh = false;
+
         setNotes((prev) => {
           const next = prev.filter(n => n.id !== id);
           if (next.length === 0) {
-            const fresh = createNote();
             notesDb.save(fresh);
-            setActiveId(fresh.id);
+            usedFresh = true;
             return [fresh];
           }
           if (activeId === id) {
-            setActiveId(next[0].id);
+            const closedIndex = prev.findIndex(n => n.id === id);
+            setActiveId((next[closedIndex] ?? next[closedIndex - 1]).id);
           }
           return next;
         });
+
+        if (usedFresh) setActiveId(fresh.id);
       });
     },
     [activeId],
