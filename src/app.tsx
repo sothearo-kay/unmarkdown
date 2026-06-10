@@ -141,6 +141,7 @@ export default function App() {
           onClick: () => {
             importNote(content);
             history.replaceState(null, "", location.pathname);
+            toastManager.close("import-shared-note");
           },
         },
         data: {
