@@ -91,6 +91,7 @@ const scrollFollowCursor = ViewPlugin.fromClass(class {
 
 const transparentOverride = EditorView.theme({
   "&": { background: "transparent !important", backgroundColor: "transparent !important", fontSize: "12.5px", height: "auto", minHeight: "100%" },
+  "&.cm-focused": { outline: "none !important" },
   "&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground": {
     backgroundColor: "#88888830 !important",
   },
