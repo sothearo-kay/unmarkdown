@@ -361,9 +361,8 @@ function EditorPane({
 
       {activeNote
         ? (
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1" resetKey={activeId}>
               <EditorView
-                key={activeNote.id}
                 note={activeNote}
                 onReady={onEditorReady}
                 onUpdate={onUpdate}
@@ -384,23 +383,19 @@ function EditorPane({
 function PreviewPane({ note, tab }: { note: Note | null; tab: RightTab }) {
   if (!note) return <div className="flex-1" />;
 
-  if (tab === "outline") {
-    return (
-      <ScrollArea className="flex-1" scrollFade>
-        <OutlineTree content={note.content} />
-      </ScrollArea>
-    );
-  }
-
   return (
-    <ScrollArea className="flex-1" scrollFade>
-      <div className="p-4">
-        <div className="prose">
-          <Suspense fallback={null}>
-            <MarkdownPreview content={note.content} />
-          </Suspense>
-        </div>
-      </div>
+    <ScrollArea className="flex-1" resetKey={`${note.id}:${tab}`} scrollFade>
+      {tab === "outline"
+        ? <OutlineTree content={note.content} />
+        : (
+            <div className="p-4">
+              <div className="prose">
+                <Suspense fallback={null}>
+                  <MarkdownPreview content={note.content} />
+                </Suspense>
+              </div>
+            </div>
+          )}
     </ScrollArea>
   );
 }

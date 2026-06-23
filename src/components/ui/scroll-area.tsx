@@ -3,19 +3,29 @@
 import type React from "react";
 
 import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
+import { useLayoutEffect, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
 export function ScrollArea({
   children,
   className,
+  resetKey,
   scrollbarGutter = false,
   scrollFade = false,
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
+  resetKey?: unknown;
   scrollbarGutter?: boolean;
   scrollFade?: boolean;
 }): React.ReactElement {
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  // Reset scroll to top whenever resetKey changes.
+  useLayoutEffect(() => {
+    if (viewportRef.current) viewportRef.current.scrollTop = 0;
+  }, [resetKey]);
+
   return (
     <ScrollAreaPrimitive.Root
       className={cn("group/scroll size-full min-h-0", className)}
@@ -30,6 +40,7 @@ export function ScrollArea({
           && "data-has-overflow-y:pe-2.5 data-has-overflow-x:pb-2.5",
         )}
         data-slot="scroll-area-viewport"
+        ref={viewportRef}
       >
         <ScrollAreaPrimitive.Content data-slot="scroll-area-content">
           {children}
