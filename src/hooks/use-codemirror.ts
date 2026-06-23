@@ -148,8 +148,11 @@ export function useCodemirror({
   const themeCompartment = useRef(new Compartment());
   const stateCache = useRef<Map<string, EditorState>>(new Map());
   const onChangeRef = useRef(onChange);
+  const vimModeRef = useRef(vimMode);
+
   useLayoutEffect(() => {
     onChangeRef.current = onChange;
+    vimModeRef.current = vimMode;
   });
 
   useEffect(() => {
@@ -180,6 +183,15 @@ export function useCodemirror({
     const view = new EditorView({ parent: editorRef.current, state: startState });
     viewRef.current = view;
     view.focus();
+
+    // Seed vim on the new view; the [vimMode] effect only runs on vimMode change, not note switch.
+    if (vimModeRef.current) {
+      getVim().then((vim) => {
+        if (viewRef.current === view) {
+          view.dispatch({ effects: vimCompartment.current.reconfigure(vim()) });
+        }
+      });
+    }
 
     return () => {
       cache.set(noteId, view.state);
