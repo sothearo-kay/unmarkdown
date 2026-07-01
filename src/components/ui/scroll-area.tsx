@@ -9,12 +9,14 @@ import { cn } from "@/lib/utils";
 
 export function ScrollArea({
   children,
+  clampContentWidth = false,
   className,
   resetKey,
   scrollbarGutter = false,
   scrollFade = false,
   ...props
 }: ScrollAreaPrimitive.Root.Props & {
+  clampContentWidth?: boolean;
   resetKey?: unknown;
   scrollbarGutter?: boolean;
   scrollFade?: boolean;
@@ -42,7 +44,10 @@ export function ScrollArea({
         data-slot="scroll-area-viewport"
         ref={viewportRef}
       >
-        <ScrollAreaPrimitive.Content data-slot="scroll-area-content">
+        <ScrollAreaPrimitive.Content
+          data-slot="scroll-area-content"
+          style={clampContentWidth ? { minWidth: 0 } : undefined}
+        >
           {children}
         </ScrollAreaPrimitive.Content>
       </ScrollAreaPrimitive.Viewport>

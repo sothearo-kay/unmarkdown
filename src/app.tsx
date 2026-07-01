@@ -384,7 +384,7 @@ function PreviewPane({ note, tab }: { note: Note | null; tab: RightTab }) {
   if (!note) return <div className="flex-1" />;
 
   return (
-    <ScrollArea className="flex-1" resetKey={`${note.id}:${tab}`} scrollFade>
+    <ScrollArea clampContentWidth className="flex-1" resetKey={`${note.id}:${tab}`} scrollFade>
       {tab === "outline"
         ? <OutlineTree content={note.content} />
         : (
