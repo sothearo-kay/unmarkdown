@@ -11,6 +11,7 @@ A minimalist markdown editor that lives in your browser. No accounts, no sync, n
 
 - **Live preview** — side-by-side rendered markdown as you type
 - **Syntax highlighting** — fenced code blocks with language support
+- **Mermaid diagrams** — `mermaid` code fences render as diagrams, click to zoom
 - **Outline view** — navigate headings at a glance
 - **Vim mode** — toggle with <kbd>Alt</kbd> + <kbd>V</kbd>
 - **Format** — prettier-powered markdown formatting with <kbd>Alt</kbd> + <kbd>F</kbd>

@@ -40,6 +40,17 @@ function formatRelative(ts: number): string {
 }
 \`\`\`
 
+## Diagrams
+
+\`\`\`mermaid
+flowchart LR
+  A[Type markdown] --> B{Fenced block?}
+  B -- mermaid --> C[Render diagram]
+  B -- other --> D[Highlight syntax]
+  C --> E[Preview]
+  D --> E
+\`\`\`
+
 ## Table
 
 | Feature             | Status |
@@ -47,6 +58,7 @@ function formatRelative(ts: number): string {
 | Live preview        | ✓      |
 | GFM support         | ✓      |
 | Syntax highlighting | ✓      |
+| Mermaid diagrams    | ✓      |
 | Share via URL       | ✓      |
 | Vim mode            | ✓      |
 
