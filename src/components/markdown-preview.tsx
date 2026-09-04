@@ -18,6 +18,13 @@ export default function MarkdownPreview({ content }: { content: string }) {
           const code = String(codeEl?.props.children ?? "").trimEnd();
           return <CodeBlock code={code} lang={lang} />;
         },
+        table({ children }) {
+          return (
+            <div className="table-scroll">
+              <table>{children}</table>
+            </div>
+          );
+        },
       }}
       rehypePlugins={[rehypeRaw]}
       remarkPlugins={[remarkGfm]}
